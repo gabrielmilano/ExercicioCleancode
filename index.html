@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primitive Obsession - Code Smell</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .team {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .team h3 {
+            margin-bottom: 10px;
+        }
+
+        section {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2a5298;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .definition {
+            background: #f0f4ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            font-size: 1.1em;
+        }
+
+        .consequences {
+            background: #fff3cd;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+        }
+
+        .consequences ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .consequences li {
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 5px;
+            position: relative;
+            padding-left: 35px;
+        }
+
+        .consequences li:before {
+            content: "⚠️";
+            position: absolute;
+            left: 10px;
+        }
+
+        .code-example {
+            margin: 30px 0;
+        }
+
+        .code-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block h3 {
+            color: white;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .bad-code h3 {
+            background: #dc3545;
+        }
+
+        .good-code h3 {
+            background: #28a745;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+        .function { color: #61afef; }
+        .number { color: #d19a66; }
+
+        .quiz-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            margin-top: 40px;
+        }
+
+        .quiz-section h2 {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .quiz-container {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .question {
+            margin-bottom: 30px;
+        }
+
+        .question h3 {
+            color: #f5576c;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .options li:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .options li.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .options li.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .options li.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .quiz-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.3s;
+        }
+
+        .quiz-button:hover {
+            transform: scale(1.05);
+        }
+
+        .quiz-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            display: none;
+        }
+
+        .quiz-result.show {
+            display: block;
+        }
+
+        .result-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .result-need-improvement {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        footer {
+            background: #2a5298;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .code-container {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔢 Primitive Obsession</h1>
+            <p style="font-size: 1.2em; margin-top: 10px;">Code Smell - Clean Code</p>
+            <div class="team">
+                <h3>👥 Equipe</h3>
+                <p>Gabriel Milano Alves</p>
+                <p>Paulo Cesar dal ponte</p>
+            </div>
+        </header>
+
+        <section>
+            <h2>📖 O que é Primitive Obsession?</h2>
+            <div class="definition">
+                <p><strong>Primitive Obsession</strong> é um code smell que ocorre quando usamos tipos primitivos (int, string, float, boolean) para representar conceitos complexos do domínio ao invés de criar classes ou objetos específicos. É a tendência de usar valores primitivos demais em situações onde objetos pequenos fariam mais sentido. Isso resulta em código duplicado, validações espalhadas e falta de encapsulamento.</p>
+            </div>
+        </section>
+
+        <section class="consequences">
+            <h2>⚠️ Consequências do Code Smell</h2>
+            <ul>
+                <li><strong>Validações duplicadas:</strong> O mesmo código de validação é repetido em vários lugares do sistema</li>
+                <li><strong>Falta de encapsulamento:</strong> A lógica de negócio fica espalhada ao invés de centralizada</li>
+                <li><strong>Código difícil de manter:</strong> Mudanças em regras exigem alterações em múltiplos pontos</li>
+                <li><strong>Perda de semântica:</strong> Dificulta a compreensão do código ao não expressar claramente o domínio</li>
+                <li><strong>Propensão a erros:</strong> Fácil passar valores inválidos sem o compilador detectar</li>
+                <li><strong>Dificuldade de testes:</strong> Necessário testar as mesmas validações em vários lugares</li>
+            </ul>
+        </section>
+
+        <section class="code-example">
+            <h2>💻 Exemplo Prático</h2>
+            
+            <div class="code-container">
+                <div class="code-block bad-code">
+                    <h3>❌ Com Primitive Obsession</h3>
+                    <pre><code><span class="comment">// Usando tipos primitivos</span>
+<span class="keyword">class</span> <span class="function">Usuario</span> {
+    <span class="keyword">private</span> String nome;
+    <span class="keyword">private</span> String email;
+    <span class="keyword">private</span> String cpf;
+    <span class="keyword">private</span> <span class="keyword">int</span> idade;
+    
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">setEmail</span>(String email) {
+        <span class="comment">// Validação espalhada</span>
+        <span class="keyword">if</span> (!email.contains(<span class="string">"@"</span>)) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"Email inválido"</span>);
+        }
+        <span class="keyword">this</span>.email = email;
+    }
+    
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">setCpf</span>(String cpf) {
+        <span class="comment">// Validação duplicada em vários lugares</span>
+        <span class="keyword">if</span> (cpf.length() != <span class="number">11</span>) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"CPF inválido"</span>);
+        }
+        <span class="keyword">this</span>.cpf = cpf;
+    }
+    
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">setIdade</span>(<span class="keyword">int</span> idade) {
+        <span class="keyword">if</span> (idade < <span class="number">0</span> || idade > <span class="number">150</span>) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"Idade inválida"</span>);
+        }
+        <span class="keyword">this</span>.idade = idade;
+    }
+}</code></pre>
+                </div>
+
+                <div class="code-block good-code">
+                    <h3>✅ Refatorado (Sem o Smell)</h3>
+                    <pre><code><span class="comment">// Criando Value Objects</span>
+<span class="keyword">class</span> <span class="function">Email</span> {
+    <span class="keyword">private</span> String valor;
+    
+    <span class="keyword">public</span> <span class="function">Email</span>(String email) {
+        <span class="keyword">if</span> (!email.contains(<span class="string">"@"</span>)) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"Email inválido"</span>);
+        }
+        <span class="keyword">this</span>.valor = email;
+    }
+}
+
+<span class="keyword">class</span> <span class="function">CPF</span> {
+    <span class="keyword">private</span> String valor;
+    
+    <span class="keyword">public</span> <span class="function">CPF</span>(String cpf) {
+        <span class="keyword">if</span> (cpf.length() != <span class="number">11</span>) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"CPF inválido"</span>);
+        }
+        <span class="keyword">this</span>.valor = cpf;
+    }
+}
+
+<span class="keyword">class</span> <span class="function">Idade</span> {
+    <span class="keyword">private</span> <span class="keyword">int</span> valor;
+    
+    <span class="keyword">public</span> <span class="function">Idade</span>(<span class="keyword">int</span> idade) {
+        <span class="keyword">if</span> (idade < <span class="number">0</span> || idade > <span class="number">150</span>) {
+            <span class="keyword">throw new</span> <span class="function">Exception</span>(<span class="string">"Idade inválida"</span>);
+        }
+        <span class="keyword">this</span>.valor = idade;
+    }
+}
+
+<span class="keyword">class</span> <span class="function">Usuario</span> {
+    <span class="keyword">private</span> String nome;
+    <span class="keyword">private</span> Email email;
+    <span class="keyword">private</span> CPF cpf;
+    <span class="keyword">private</span> Idade idade;
+    <span class="comment">// Validação encapsulada!</span>
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <div class="quiz-section">
+            <h2>🎮 Quiz Interativo - Teste seus conhecimentos!</h2>
+            
+            <div class="quiz-container">
+                <div class="question" data-question="1">
+                    <h3>Pergunta 1: Qual é a principal característica do Primitive Obsession?</h3>
+                    <ul class="options">
+                        <li data-answer="wrong">Usar muitos objetos complexos desnecessariamente</li>
+                        <li data-answer="correct">Usar tipos primitivos para representar conceitos do domínio</li>
+                        <li data-answer="wrong">Criar muitas classes abstratas</li>
+                        <li data-answer="wrong">Usar herança ao invés de composição</li>
+                    </ul>
+                </div>
+
+                <div class="question" data-question="2">
+                    <h3>Pergunta 2: Qual é a melhor solução para Primitive Obsession?</h3>
+                    <ul class="options">
+                        <li data-answer="wrong">Usar mais comentários no código</li>
+                        <li data-answer="correct">Criar Value Objects ou classes específicas do domínio</li>
+                        <li data-answer="wrong">Adicionar mais validações em cada método</li>
+                        <li data-answer="wrong">Usar variáveis globais</li>
+                    </ul>
+                </div>
+
+                <div class="question" data-question="3">
+                    <h3>Pergunta 3: Qual NÃO é uma consequência do Primitive Obsession?</h3>
+                    <ul class="options">
+                        <li data-answer="wrong">Validações duplicadas</li>
+                        <li data-answer="wrong">Falta de encapsulamento</li>
+                        <li data-answer="correct">Melhor performance do código</li>
+                        <li data-answer="wrong">Código difícil de manter</li>
+                    </ul>
+                </div>
+
+                <button class="quiz-button" onclick="checkAnswers()">Verificar Respostas</button>
+                
+                <div class="quiz-result" id="quizResult"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 Clean Code - Code Smells</p>
+            <p>Desenvolvido para fins educacionais - 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        const options = document.querySelectorAll('.options li');
+        
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const siblings = this.parentElement.children;
+                for (let sibling of siblings) {
+                    sibling.classList.remove('selected');
+                }
+                this.classList.add('selected');
+            });
+        });
+
+        function checkAnswers() {
+            const questions = document.querySelectorAll('.question');
+            let correct = 0;
+            let answered = 0;
+
+            questions.forEach(question => {
+                const selected = question.querySelector('.options li.selected');
+                if (selected) {
+                    answered++;
+                    const isCorrect = selected.getAttribute('data-answer') === 'correct';
+                    
+                    const allOptions = question.querySelectorAll('.options li');
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                        if (opt.getAttribute('data-answer') === 'correct') {
+                            opt.classList.add('correct');
+                        } else if (opt.classList.contains('selected')) {
+                            opt.classList.add('incorrect');
+                        }
+                    });
+
+                    if (isCorrect) {
+                        correct++;
+                    }
+                }
+            });
+
+            const resultDiv = document.getElementById('quizResult');
+            const total = questions.length;
+            
+            if (answered < total) {
+                resultDiv.innerHTML = `⚠️ Você respondeu apenas ${answered} de ${total} perguntas. Responda todas!`;
+                resultDiv.className = 'quiz-result show result-need-improvement';
+                return;
+            }
+
+            const percentage = (correct / total) * 100;
+            let message = '';
+            let className = 'quiz-result show ';
+
+            if (percentage === 100) {
+                message = `🎉 Perfeito! Você acertou todas as ${correct} perguntas! Você é um expert em Clean Code!`;
+                className += 'result-excellent';
+            } else if (percentage >= 66) {
+                message = `👏 Muito bem! Você acertou ${correct} de ${total} perguntas (${percentage.toFixed(0)}%). Continue estudando!`;
+                className += 'result-good';
+            } else {
+                message = `📚 Você acertou ${correct} de ${total} perguntas (${percentage.toFixed(0)}%). Revise o conteúdo e tente novamente!`;
+                className += 'result-need-improvement';
+            }
+
+            resultDiv.innerHTML = message;
+            resultDiv.className = className;
+
+            document.querySelector('.quiz-button').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
