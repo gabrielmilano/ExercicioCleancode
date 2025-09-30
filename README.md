@@ -12,10 +12,9 @@ Este projeto apresenta de forma clara e interativa o conceito de **Primitive Obs
 
 ## 👥 Equipe
 
-- **[Seu Nome]** - [Seu RA]
-- **[Nome Colega 2]** - [RA]
-- **[Nome Colega 3]** - [RA]
-
+- **Gabriel Milano ALVES** 
+- **Paulo Cesar Dal ponte**
+- 
 > ⚠️ **Importante:** Edite os nomes e RAs no arquivo `index.html` (linhas 164-168)
 
 ## 🎯 O que é Primitive Obsession?
